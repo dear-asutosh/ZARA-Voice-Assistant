@@ -1,164 +1,156 @@
-let button = document.querySelector(".talk");
-console.log("Button:", button);
-let content = document.querySelector(".content");
-console.log("Content:", content);
+const button = document.querySelector(".talk");
+const content = document.querySelector(".content");
+const ownerBio =
+  "Asutosh Sahoo is currently pursuing an MCA at OUTR and has a strong passion for programming.";
 
-window.addEventListener("contextmenu", (event) => {
-    speak(" Right click Disabled !\n for Security Purposes ! ");
-  alert(" Right click Disabled !\n for Security Purposes ! ");
+window.addEventListener("contextmenu", () => {
+  speak("Right click is disabled for security purposes.");
+  alert("Right click is disabled for security purposes.");
 });
 
 function speak(text) {
-  let text_speak = new SpeechSynthesisUtterance(text);
-  text_speak.rate = 1;
-  text_speak.volume = 1;
-  text_speak.pitch = 1;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 1;
+  utterance.volume = 1;
+  utterance.pitch = 1;
 
-  window.speechSynthesis.speak(text_speak);
+  window.speechSynthesis.speak(utterance);
+}
+
+function wish() {
+  const hour = new Date().getHours();
+  let greeting;
+
+  if (hour < 11) {
+    greeting = "Good morning";
+  } else if (hour < 16) {
+    greeting = "Good afternoon";
+  } else if (hour < 20) {
+    greeting = "Good evening";
+  } else {
+    greeting = "Good night";
+  }
+
+  speak(`${greeting}, Boss. How may I help you?`);
 }
 
 window.addEventListener("load", () => {
-  speak("initialiazing zara...");
+  speak("Initializing ZARA.");
   wish();
 });
-function wish() {
-  var day = new Date();
-  var hour = day.getHours();
 
-  if (hour >= 0 && hour < 11) {
-    speak("Good Morning Boss...");
-    speak("How may i help you ?");
-  } else if (hour > 11 && hour < 16) {
-    speak("Good Afternoon Boss...");
-    speak("How may i help you ?");
-  } else if (hour > 16 && hour < 20) {
-    speak("Good evening boss...");
-    speak("How may i help you ?");
-  } else {
-    speak("Good night Boss...");
-    speak("How may i help you ?");
-  }
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+if (recognition) {
+  recognition.onresult = (event) => {
+    const transcript = event.results[event.resultIndex][0].transcript;
+    content.textContent = transcript;
+    takeCommand(transcript);
+  };
+
+  recognition.onerror = (event) => {
+    content.textContent = `Speech recognition failed: ${event.error}.`;
+  };
 }
 
-let speechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = new speechRecognition();
-
-recognition.onresult = (event) => {
-  const currentIndex = event.resultIndex;
-  const transcript = event.results[currentIndex][0].transcript;
-  content.textContent = transcript;
-  takeCommand(transcript.toLowerCase());
-};
-
 button.addEventListener("click", () => {
+  if (!recognition) {
+    content.textContent = "Speech recognition is not supported in this browser.";
+    return;
+  }
+
   content.textContent = "Listening...";
   recognition.start();
 });
 
-function takeCommand(message) {
-  if (
-    message.includes("hey") ||
-    message.includes("hello") ||
-    message.includes("hi")
-  ) {
-    speak("Hello Boss , How May I Help You?");
-  } else if (message.includes("hello zara")) {
+function normalizeCommand(message) {
+  return message.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function hasPhrase(message, phrase) {
+  return ` ${message} `.includes(` ${normalizeCommand(phrase)} `);
+}
+
+function takeCommand(transcript) {
+  const message = normalizeCommand(transcript);
+
+  if (hasPhrase(message, "hello zara")) {
     wish();
-    speak("How may  help you ?");
-  } else if (message.includes("upload my details of instagram")) {
-    speak("uploading boss");
-    speak("ready boss");
+  } else if (hasPhrase(message, "upload my details of instagram")) {
+    speak("Uploading your details. Ready, Boss.");
   } else if (
-    message.includes("who is asutosh") ||
-    message.includes("who is ashutosh")
+    hasPhrase(message, "who is asutosh") ||
+    hasPhrase(message, "who is ashutosh")
   ) {
-    speak(
-      "My Boss........My Cute Boss...... I love him... Here is his Instagram Account....You can talk with my Single Boss ...."
-    );
+    speak(`${ownerBio} Here is his Instagram profile.`);
     window.open("https://www.instagram.com/dear_asutosh/", "_blank");
   } else if (
-    message.includes("who is satyajit") ||
-    message.includes("who is satyajit choudhury") ||
-    message.includes("who is satyajeet") ||
-    message.includes("who is satyajeet chowdhury")
+    hasPhrase(message, "who is satyajit") ||
+    hasPhrase(message, "who is satyajeet")
   ) {
-    speak(
-      "satyajit is one of the friend of my BOSS.satyajit is a most beautful girl .mostly He is a Randi "
-    );
-  } else if (message.includes("who is gitanjali")) {
-    speak(
-      "Gitanjali is a pretty Girl and her smile............... haaaye haaye ... She is one of the best friend of my Boss. Mostly she loves Ghuushuri ... here is her instagram account ... "
-    );
-    windows.open();
-  } else if (message.includes("who is raja")) {
-    speak("a friend of my boss");
-  } else if (message.includes("who are you")) {
+    speak("Satyajit is one of Asutosh's friends.");
+  } else if (hasPhrase(message, "who is gitanjali")) {
+    speak("Gitanjali is one of Asutosh's friends.");
+  } else if (hasPhrase(message, "who is raja")) {
+    speak("Raja is one of my friends.");
+  } else if (hasPhrase(message, "who are you")) {
     window.open("https://github.com/DearAsutosh", "_blank");
     speak(
-      "I am a voice assistant created by My boss Asutoosh Sahoo , currently an undergraduate student from BJB Autonomus College,Bhubaneshwar with a strong passion for programming. He worked hard to create me, and I'm here to assist you in your  daily tasks."
+      `I am ZARA, a voice assistant created by Asutosh Sahoo. ${ownerBio}`
     );
-  } else if (message.includes("open google")) {
+  } else if (hasPhrase(message, "open google")) {
     window.open("https://google.com", "_blank");
-    speak("Opening Google...");
-  } else if (message.includes("open youtube")) {
+    speak("Opening Google.");
+  } else if (hasPhrase(message, "open youtube")) {
     window.open("https://youtube.com", "_blank");
-    speak("Opening Youtube...");
-  } else if (message.includes("open facebook")) {
+    speak("Opening YouTube.");
+  } else if (hasPhrase(message, "open facebook")) {
     window.open("https://facebook.com", "_blank");
-    speak("Opening Facebook...");
-  } else if (message.includes("your owner")) {
+    speak("Opening Facebook.");
+  } else if (hasPhrase(message, "your owner")) {
     window.open("https://www.instagram.com/dear_asutosh/", "_blank");
-    speak("Opening Instagram of Boss..... Asutosh Saahoo...");
-  } else if (message.includes("owner") || message.includes("boss")) {
-    speak(
-      "My boss is Asutosh Saahoo , currently an undergraduate student from BJB Autonomus College,Bhubaneshwar with a strong passion for programming."
-    );
-    speak("Here is his instagram account...");
+    speak("Opening Asutosh's Instagram profile.");
+  } else if (
+    hasPhrase(message, "owner") ||
+    hasPhrase(message, "boss")
+  ) {
+    speak(`My creator is Asutosh Sahoo. ${ownerBio}`);
     window.open("https://www.instagram.com/dear_asutosh/", "_blank");
-    speak(
-      "He worked from few months to create me, and I'm here to assist you in your  daily tasks. !"
-    );
-  }
-
-  // else if (message.includes('what is') || message.includes('who is') || message.includes('what are')) {
-  //     window.open(`https://www.google.com/search?q=${message.replace(" ", "+")}`, "_blank");
-  //     const finalText = "This is what I found on the internet regarding " + message;
-  //     speak(finalText);
-  // }
-  else if (message.includes("wikipedia")) {
+  } else if (hasPhrase(message, "wikipedia")) {
+    const topic = message.replace(/\bwikipedia\b/g, "").trim();
     window.open(
-      `https://en.wikipedia.org/wiki/${message
-        .replace("wikipedia", "")
-        .trim()}`,
+      `https://en.wikipedia.org/wiki/${encodeURIComponent(topic.replace(/\s+/g, "_"))}`,
       "_blank"
     );
-    const finalText = "This is what I found on Wikipedia regarding " + message;
-    speak(finalText);
-  } else if (message.includes("time")) {
+    speak(`Here is what I found on Wikipedia about ${topic}.`);
+  } else if (hasPhrase(message, "time")) {
     const time = new Date().toLocaleString(undefined, {
       hour: "numeric",
       minute: "numeric",
     });
-    const finalText = "The current time is " + time;
-    speak(finalText);
-  } else if (message.includes("date")) {
+    speak(`The current time is ${time}.`);
+  } else if (hasPhrase(message, "date")) {
     const date = new Date().toLocaleString(undefined, {
       month: "short",
       day: "numeric",
     });
-    const finalText = "Today's date is " + date;
-    speak(finalText);
-  } else if (message.includes("calculator")) {
+    speak(`Today's date is ${date}.`);
+  } else if (hasPhrase(message, "calculator")) {
     window.open("Calculator:///");
-    const finalText = "Opening Calculator";
-    speak(finalText);
+    speak("Opening Calculator.");
+  } else if (
+    hasPhrase(message, "hello") ||
+    hasPhrase(message, "hey") ||
+    hasPhrase(message, "hi")
+  ) {
+    speak("Hello, Boss. How may I help you?");
   } else {
     window.open(
-      `https://www.google.com/search?q=${message.replace(" ", "+")}`,
+      `https://www.google.com/search?q=${encodeURIComponent(message)}`,
       "_blank"
     );
-    const finalText = "I found some information for " + message + " on Google";
-    speak(finalText);
+    speak(`I found some information about ${message} on Google.`);
   }
 }
